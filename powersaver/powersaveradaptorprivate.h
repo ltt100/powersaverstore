@@ -54,7 +54,7 @@ private:
     void initStrategy();
     void getStrategy();
     void saveDefaultStrategy();
-    bool setPowerSaving(PowerSaverLevel level);
+    bool applyPowerSaving(PowerSaverLevel level);
 
     void geoClueSaver(PowerSaverLevel level);
     void blueToothSaver(PowerSaverLevel level);
@@ -66,7 +66,8 @@ private:
     void lockScreenSaver(PowerSaverLevel level);
     void ofonoSaver(PowerSaverLevel level);
     void connmanSaver(PowerSaverLevel level);
-    void MCESaver(PowerSaverLevel level);
+    void MCEBacklightSaver(PowerSaverLevel level);
+    void MCESleepTimeSaver(PowerSaverLevel level);
 
 private:
     // m_level record the level of powersaver

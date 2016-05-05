@@ -30,6 +30,7 @@ static const QString SERVICE_INTERFACE = "com.syberos.powersaver.Interface";
 PowerSaverAdaptorPrivate::PowerSaverAdaptorPrivate(QObject *parent):
     QObject(parent)
 {
+    // Init the member of PowerSaverAdaptorPrivate
     m_level = S_OFF;
     initModules();
     m_powerStorage = new PowerSaverStorageJson(PowerSaverStorageJson::Json, this);
@@ -44,20 +45,23 @@ PowerSaverAdaptorPrivate::PowerSaverAdaptorPrivate(QObject *parent):
     }
     initFuncList();
 
+    applyPowerSaving(S1);
+
+
     new PowerSaverAdaptor(this);
+
 
     if (!QDBusConnection::systemBus().registerService(SERVICE_NAME)) {
         qDebug() << __FILE__ << __LINE__ << Q_FUNC_INFO
                  << "PowerSaverAdaptorPrivate::PowerSaverAdaptorPrivate Register dbus service failed! " ;
 
     }
-
     if (!QDBusConnection::systemBus().registerObject(SERVICE_PATH, this)) {
         qDebug() << __FILE__ << __LINE__ << Q_FUNC_INFO
                  << "PowerSaverAdaptorPrivate::PowerSaverAdaptorPrivate Register dbus object failed! ";
     }
 
-    // TODO: Add code
+    // TODO: Add code to check power change
 }
 
 bool PowerSaverAdaptorPrivate::disablePowerSaving()
@@ -65,7 +69,7 @@ bool PowerSaverAdaptorPrivate::disablePowerSaving()
     qDebug() << __FILE__ << __LINE__ << Q_FUNC_INFO
                  << "going to disable power saving!";
 
-    return setPowerSaving(S_OFF);
+    return applyPowerSaving(S_OFF);
 }
 
 bool PowerSaverAdaptorPrivate::enablePowerSaving(int level)
@@ -75,7 +79,7 @@ bool PowerSaverAdaptorPrivate::enablePowerSaving(int level)
 
     if ((level >= S_OFF) && (level <= S_END))
     {
-        return setPowerSaving((PowerSaverLevel)level);
+        return applyPowerSaving((PowerSaverLevel)level);
     }
     else
     {
@@ -149,7 +153,6 @@ void PowerSaverAdaptorPrivate::initModules(void)
 {
 //    pSaverFunc a = &PowerSaverAdaptorPrivate::geoClueSaver;
 //    (this->*a)(m_level);
-
     // Init module and func map
     m_modules.insert("geoClue", &PowerSaverAdaptorPrivate::geoClueSaver);
     m_modules.insert("blueTooth", &PowerSaverAdaptorPrivate::blueToothSaver);
@@ -161,12 +164,41 @@ void PowerSaverAdaptorPrivate::initModules(void)
     m_modules.insert("lockScreen", &PowerSaverAdaptorPrivate::lockScreenSaver);
     m_modules.insert("ofono", &PowerSaverAdaptorPrivate::ofonoSaver);
     m_modules.insert("connman", &PowerSaverAdaptorPrivate::connmanSaver);
-    m_modules.insert("MCE", &PowerSaverAdaptorPrivate::MCESaver);
+    m_modules.insert("MCE_backlight", &PowerSaverAdaptorPrivate::MCEBacklightSaver);
+    m_modules.insert("MCE_sleeptime", &PowerSaverAdaptorPrivate::MCESleepTimeSaver);
 }
 
 void PowerSaverAdaptorPrivate::initFuncList(void)
 {
-    // Init the level func map. We read the data from database
+    // Init the level func map. This map used to quick find the saver function of module
+    // At present, the data in m_modules and m_strategy can provide the data to
+    QMapIterator<QString, pSaverFunc> i(m_modules);
+    while(i.hasNext())
+    {
+        i.next();
+        QVariant q = m_strategy.value(i.key());
+        qDebug() << q.type();
+        if (q.type() == QVariant::Int)
+        {
+            m_levelFuncMap.insertMulti((PowerSaverLevel)q.toInt(), i.value());
+        }
+        else if (q.type() == QVariant::Double)
+        {
+            m_levelFuncMap.insertMulti((PowerSaverLevel)q.toDouble(), i.value());
+        }
+        else if (q.type() == QVariant::List)
+        {
+            for (int l = (int)S0; l <= (int)S_END; l++)
+            {
+                m_levelFuncMap.insertMulti((PowerSaverLevel)l, i.value());
+            }
+        }
+        else
+        {
+            qDebug() << __FILE__ << __LINE__ << Q_FUNC_INFO << "Wrong type of m_strategy :" << i.key() << i.value();
+        }
+    }
+/*
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::geoClueSaver);
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::blueToothSaver);
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::wallpaperSaver);
@@ -178,6 +210,7 @@ void PowerSaverAdaptorPrivate::initFuncList(void)
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::ofonoSaver);
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::connmanSaver);
     m_levelFuncMap.insertMulti(S0, &PowerSaverAdaptorPrivate::MCESaver);
+*/
 }
 
 void PowerSaverAdaptorPrivate::initStrategy()
@@ -191,13 +224,13 @@ void PowerSaverAdaptorPrivate::getStrategy()
     Q_ASSERT(!m_strategy.isEmpty());
 }
 
-bool PowerSaverAdaptorPrivate::setPowerSaving(PowerSaverLevel level)
+bool PowerSaverAdaptorPrivate::applyPowerSaving(PowerSaverLevel level)
 {
     bool ret = true;
     qDebug() << __FILE__ << __LINE__ << Q_FUNC_INFO << "going to setPowerSaving " << level;
 
     int delta = level - m_level;
-    QMutableMapIterator<PowerSaverLevel, pSaverFunc> it(m_levelFuncMap);
+//    QMutableMapIterator<PowerSaverLevel, pSaverFunc> it(m_levelFuncMap);
 
     if (delta == 0)
     {
@@ -229,6 +262,10 @@ bool PowerSaverAdaptorPrivate::setPowerSaving(PowerSaverLevel level)
         }
 
         // We will send signal to inform the change of powersaver
+        m_level = level;
+        emit powerSavingChanged(int(m_level));
+        m_strategy["level"] = QVariant(int(m_level));
+        m_powerStorage->updateStrategy(m_strategy);
     }
 
     return ret;
@@ -286,11 +323,15 @@ void PowerSaverAdaptorPrivate::connmanSaver(PowerSaverLevel level)
     Q_UNUSED(level);
 }
 
-void PowerSaverAdaptorPrivate::MCESaver(PowerSaverLevel level)
+void PowerSaverAdaptorPrivate::MCEBacklightSaver(PowerSaverLevel level)
 {
     Q_UNUSED(level);
 }
 
+void PowerSaverAdaptorPrivate::MCESleepTimeSaver(PowerSaverLevel level)
+{
+    Q_UNUSED(level);
+}
 
 
 

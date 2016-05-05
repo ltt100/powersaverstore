@@ -32,10 +32,6 @@
 #endif
 #define POWERSAVER_STORAGE_NAME "powersaverstrategy"
 
-#ifdef TESTJSONTEXT
-#define POWERSAVER_STORAGE_NAME_TEXT "powersaverstrategy.json"
-#endif
-
 
 PowerSaverStorageJson::PowerSaverStorageJson(PowerSaverStorageJson::SaveFormat format, QObject *parent) :
     QObject(parent), m_format(format)
@@ -58,25 +54,6 @@ PowerSaverStorageJson::PowerSaverStorageJson(PowerSaverStorageJson::SaveFormat f
     {
         m_jsonExist = true;
     }
-/*
-    if (!file.exists()) {
-        file.open(QIODevice::ReadWrite);
-        file.close();
-    }
-    else
-    {
-        m_jsonExist = true;
-    }
-*/
-#ifdef TESTJSONTEXT
-    QString ttext = POWERSAVER_STORAGE_PATH;
-    ttext.append("/").append(POWERSAVER_STORAGE_NAME_TEXT);
-    QFile filetext(ttext);
-    if (!filetext.exists()) {
-        filetext.open(QIODevice::ReadWrite | QIODevice::Text);
-        filetext.close();
-    }
-#endif /* TESTJSONTEXT */
 }
 
 bool PowerSaverStorageJson::isStrategyExist()
@@ -107,23 +84,11 @@ bool PowerSaverStorageJson::updateStrategy(QMap<QString, QVariant> strategy)
                    ? jsonDoc.toJson()
                    : jsonDoc.toBinaryData());
     saveFile.close();
-    m_jsonExist = true;
 
-#ifdef TESTJSONTEXT
-    QString ttext = POWERSAVER_STORAGE_PATH;
-    ttext.append("/").append(POWERSAVER_STORAGE_NAME_TEXT);
-    QFile saveFileText(ttext);
-    if (!saveFileText.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "file open error:" << POWERSAVER_STORAGE_NAME_TEXT;
-        return false;
+    if (!m_jsonExist)
+    {
+        m_jsonExist = true;
     }
-    QJsonDocument jsonDocText = QJsonDocument::fromVariant(strategy);
-    if (!jsonDocText.isNull()) {
-       qDebug() << "Now print the save text json:\n" << jsonDocText.toJson();
-    }
-    saveFileText.write(jsonDocText.toJson());
-    saveFileText.close();
-#endif /* TESTJSONTEXT */
 
     return ret;
 }
@@ -143,35 +108,14 @@ QMap<QString, QVariant> PowerSaverStorageJson::loadStrategy()
     }
     QByteArray byteArray = file.readAll();
     file.close();
-#ifdef TESTJSONTEXT
-    QString ttext = POWERSAVER_STORAGE_PATH;
-    ttext.append("/").append(POWERSAVER_STORAGE_NAME_TEXT);
-    QFile filetext(ttext);
-    if (!filetext.open(QIODevice::ReadOnly))
-    {
-        qDebug() << "file read error:" << POWERSAVER_STORAGE_NAME_TEXT;
-    }
-    QByteArray byteArrayText = filetext.readAll();
-    filetext.close();
-#endif /* TESTJSONTEXT */
 
     QJsonDocument parseDoc = (m_format == Json
         ? QJsonDocument::fromJson(byteArray)
         : QJsonDocument::fromBinaryData(byteArray));
     qDebug() << "Now print the load json:\n" << parseDoc.toJson();
     QJsonObject jsonObj = parseDoc.object();
+    qDebug() << "Now print the load json object:\n" << jsonObj;
     ret = jsonObj.toVariantMap();
-
-#ifdef TESTJSONTEXT
-    QJsonParseError error;
-    QJsonDocument parseDocText = QJsonDocument::fromJson(byteArrayText, &error);
-    if (error.error == QJsonParseError::NoError)
-    {
-        QMap<QString, QVariant> retTemp;
-        QJsonObject jsonObjText = parseDocText.object();
-        retTemp = jsonObjText.toVariantMap();
-    }
-#endif /* TESTJSONTEXT */
 
     return ret;
 }
