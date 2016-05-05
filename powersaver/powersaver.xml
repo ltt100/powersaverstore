@@ -1,0 +1,31 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.syberos.powersaver.Interface">
+    <property name="users" type="as" access="read"/>
+    <doc>
+      <line>This interface provide the power saving service.</line>
+    </doc>
+    <signal name="powerSavingChanged">
+     <arg name="level" type="i" direction="out"/>
+    </signal>
+    <method name="enablePowerSaving">
+      <arg name="level" type="i" direction="in"/>
+      <arg name="retval" type="b" direction="out"/>
+    </method>
+    <method name="disablePowerSaving">
+      <arg name="retval" type="b" direction="out"/>
+    </method>
+    <method name="getPowerSavingLevel">
+      <arg name="retval" type="i" direction="out"/>
+    </method>
+    <method name="setPowerSavingStrategy">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="powerSaverStrategyList"/>
+      <arg name="strategyList" type="a(r(sii))" direction="in"/>
+      <arg name="retval" type="b" direction="out"/>
+    </method>
+    <method name="getPowerSavingStrategy">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="powerSaverStrategyList"/>
+      <arg name="retval" type="a(r(sii))" direction="out"/>
+    </method>
+  </interface>
+</node>
