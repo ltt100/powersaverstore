@@ -10,7 +10,7 @@
 * by Beijing Yuan Xin Technology Co.,Ltd. All rights are reserved.
 */
 
-#include "powersaverstorageDB.h"
+#include "powersavermanagerstorageDB.h"
 
 #include <QDir>
 #include <QDebug>
@@ -42,33 +42,33 @@
 
 #define GET_RECORDS "SELECT * FROM %s"
 
-PowerSaverStorage::PowerSaverStorage(QObject *parent) :
+PowerSaverMangerStorage::PowerSaverMangerStorage(QObject *parent) :
     QObject(parent)
 {
     initDB();
 }
 
-bool PowerSaverStorage::updateStrategy(QMap<QString, QVariant> strategy)
+bool PowerSaverMangerStorage::updateStrategy(const QMap<QString, QVariant> & strategy)
 {
     bool ret = false;
     Q_UNUSED(strategy);
     return ret;
 }
 
-bool PowerSaverStorage::isTableExist()
+bool PowerSaverMangerStorage::isTableExist()
 {
     QSqlQuery query(m_db);
     bool ret = false;
     return ret;
 }
 
-QMap<QString, QVariant> PowerSaverStorage::selectStrategy()
+QMap<QString, QVariant> PowerSaverMangerStorage::loadStrategy()
 {
     QMap<QString, QVariant> ret;
     return ret;
 }
 
-void PowerSaverStorage::initDB()
+void PowerSaverMangerStorage::initDB()
 {
     QDir dbDir(POWERSAVER_DB_PATH);
     if(!dbDir.exists()) {
@@ -103,7 +103,7 @@ void PowerSaverStorage::initDB()
     qDebug() << "powersaver-----------end";
 }
 
-bool PowerSaverStorage::createTable()
+bool PowerSaverMangerStorage::createTable()
 {
     QSqlQuery query(m_db);
     bool result = query.exec(QString(CREATE_TABLE).arg(POWERSAVER_TABLE_NAME));

@@ -5,14 +5,14 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
-class PowerSaverStorage : public QObject
+class PowerSaverMangerStorage : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit PowerSaverStorage(QObject *parent = 0);
-    bool updateStrategy(QMap<QString, QVariant> strategy);
-    QMap<QString, QVariant> selectStrategy();
+    explicit PowerSaverMangerStorage(QObject *parent = 0);
+    bool updateStrategy(const QMap<QString, QVariant> & strategy);
+    QMap<QString, QVariant> loadStrategy();
     bool isTableExist();
 signals:
 

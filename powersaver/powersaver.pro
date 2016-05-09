@@ -8,9 +8,9 @@ QT       += core dbus sql
 
 QT       -= gui
 
-system(qdbusxml2cpp -c PowerSaverAdaptor -a powersaveradaptor.h:powersaveradaptor.cpp powersaver.xml -i powersavertypes.h)
+system(qdbusxml2cpp -c PowerSaverManagerAdaptor -a powersavermanageradaptor.h:powersavermanageradaptor.cpp powersavermanager.xml -i powersavermanagertypes.h)
 
-TARGET = powersaver
+TARGET = powersavermanager
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -19,18 +19,18 @@ LIBS += -lrt
 CONFIG += link_pkgconfig
 
 SOURCES += main.cpp \
-    powersaveradaptor.cpp \
-    powersaveradaptorprivate.cpp \
-    powersavertypes.cpp \
-    powersaverstorageDB.cpp \
-    powersaverstorageJson.cpp
+    powersavermanageradaptorprivate.cpp \
+    powersavermanagertypes.cpp \
+    powersavermanageradaptor.cpp \
+    powersavermanagerstorageDB.cpp \
+    powersavermanagerstorageJson.cpp
 
 HEADERS += \
-    powersaveradaptor.h \
-    powersaveradaptorprivate.h \
-    powersavertypes.h \
-    powersaverstorageDB.h \
-    powersaverstorageJson.h
+    powersavermanageradaptorprivate.h \
+    powersavermanagertypes.h \
+    powersavermanagerstorageJson.h \
+    powersavermanageradaptor.h \
+    powersavermanagerstorageDB.h
 
 DISTFILES += \
-    powersaver.xml
+    powersavermanager.xml

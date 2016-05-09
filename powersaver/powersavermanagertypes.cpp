@@ -10,10 +10,10 @@
 * by Beijing Yuan Xin Technology Co.,Ltd. All rights are reserved.
 */
 
-#include "powersavertypes.h"
+#include "powersavermanagertypes.h"
 
 /* send the ObjectPathProperties data into a D-Bus argument */
-QDBusArgument &operator<<(QDBusArgument &argument, const powerSaverStrategy &obj)
+QDBusArgument &operator<<(QDBusArgument &argument, const powerSaverManagerStrategy &obj)
 {
     argument.beginStructure();
     argument << obj.mModuleName << obj.mLevel << obj.mValue;
@@ -22,7 +22,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const powerSaverStrategy &obj
 }
 
 /* Retrieve the ObjectPathProperties data from the D-Bus argument */
-const QDBusArgument &operator>>(const QDBusArgument &argument, powerSaverStrategy &obj)
+const QDBusArgument &operator>>(const QDBusArgument &argument, powerSaverManagerStrategy &obj)
 {
     argument.beginStructure();
     argument >> obj.mModuleName >> obj.mLevel >> obj.mValue;

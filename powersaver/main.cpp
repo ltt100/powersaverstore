@@ -11,12 +11,12 @@
 */
 
 #include <QCoreApplication>
-#include <powersaveradaptorprivate.h>
+#include <powersavermanageradaptorprivate.h>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    PowerSaverAdaptorPrivate * tmAdaptorPrivate = new PowerSaverAdaptorPrivate();
+    PowerSaverManagerAdaptorPrivate * tmAdaptorPrivate = new PowerSaverManagerAdaptorPrivate();
     Q_UNUSED(tmAdaptorPrivate);
     return a.exec();
 }
